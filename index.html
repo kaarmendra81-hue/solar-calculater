@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>सोलर कैलकुलेटर | Solar Calculator India</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☀️</text></svg>">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', 'Noto Sans Devanagari', sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
+
+    /* Header */
+    .header { background: linear-gradient(135deg, #1a5f2a 0%, #2d8a3e 50%, #f5a623 100%); padding: 32px 20px; text-align: center; color: white; }
+    .header .icon { font-size: 48px; margin-bottom: 8px; }
+    .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+    .header p { font-size: 15px; opacity: 0.95; }
+
+    /* Container */
+    .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+
+    /* Cards */
+    .card { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid #e8e8e8; }
+    .card-title { color: #1a5f2a; font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+    /* Buttons Grid */
+    .btn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; margin-bottom: 20px; }
+    .kw-btn { padding: 14px; border: 2px solid #e0e0e0; border-radius: 12px; background: #fafafa; cursor: pointer; font-size: 16px; font-weight: 700; color: #333; transition: all 0.2s; }
+    .kw-btn:hover { border-color: #2d8a3e; transform: translateY(-2px); }
+    .kw-btn.active { background: #1a5f2a; border-color: #1a5f2a; color: white; transform: scale(1.05); box-shadow: 0 4px 16px rgba(26,95,42,0.3); }
+
+    /* Inputs */
+    .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+    .input-group label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; font-weight: 600; }
+    .input-group input, .input-group select { width: 100%; padding: 12px 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; background: #fafafa; }
+    .input-group input:focus, .input-group select:focus { outline: none; border-color: #2d8a3e; }
+    .slider-val { text-align: center; font-size: 14px; color: #1a5f2a; font-weight: 700; margin-top: 4px; }
+
+    /* Result Cards */
+    .result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .result-card { border-radius: 14px; padding: 20px; text-align: center; color: white; }
+    .result-card .label { font-size: 11px; opacity: 0.85; margin-bottom: 6px; }
+    .result-card .value { font-size: 28px; font-weight: 700; }
+    .result-card .unit { font-size: 12px; opacity: 0.8; }
+    .result-card .value-sm { font-size: 22px; font-weight: 700; }
+
+    .bg-green { background: linear-gradient(135deg, #1a5f2a, #2d8a3e); }
+    .bg-orange { background: linear-gradient(135deg, #f5a623, #e8910a); }
+    .bg-red { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .bg-purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+    .bg-teal { background: linear-gradient(135deg, #27ae60, #1e8449); box-shadow: 0 4px 16px rgba(39,174,96,0.3); }
+    .bg-blue { background: linear-gradient(135deg, #3498db, #2980b9); }
+
+    /* Info Cards */
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .info-card { background: #fff; border-radius: 14px; padding: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid #e8e8e8; text-align: center; }
+    .info-card .icon { font-size: 28px; margin-bottom: 4px; }
+    .info-card .label { font-size: 12px; color: #888; margin-bottom: 4px; }
+    .info-card .value { font-size: 22px; font-weight: 700; }
+    .info-card .unit { font-size: 12px; color: #888; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #1a5f2a; color: white; padding: 12px; text-align: center; font-weight: 600; }
+    td { padding: 10px; text-align: center; border-bottom: 1px solid #eee; }
+    tr:nth-child(even) { background: #f9f9f9; }
+    tr.highlight { background: #fff3cd !important; font-weight: 700; }
+    tr.selected { background: #e8f5e9 !important; font-weight: 700; border-left: 4px solid #27ae60; }
+
+    /* CTA Buttons */
+    .cta-section { background: linear-gradient(135deg, #1a5f2a, #2d8a3e); border-radius: 14px; padding: 28px; text-align: center; color: white; margin-bottom: 20px; }
+    .cta-section h3 { font-size: 22px; margin-bottom: 8px; }
+    .cta-section p { font-size: 15px; opacity: 0.9; margin-bottom: 20px; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; border-radius: 30px; font-weight: 700; font-size: 15px; text-decoration: none; transition: all 0.2s; border: none; cursor: pointer; }
+    .btn-whatsapp { background: #25D366; color: white; }
+    .btn-whatsapp:hover { background: #128C7E; transform: translateY(-2px); }
+    .btn-call { background: #f5a623; color: #1a1a1a; }
+    .btn-call:hover { background: #e8910a; transform: translateY(-2px); }
+    .btn-form { background: #fff; color: #1a5f2a; }
+    .btn-form:hover { background: #f0f0f0; transform: translateY(-2px); }
+
+    /* Lead Form */
+    .lead-form { display: none; }
+    .lead-form.active { display: block; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+    .form-group label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; font-weight: 600; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; background: #fafafa; font-family: inherit; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #2d8a3e; }
+    .submit-btn { background: linear-gradient(135deg, #1a5f2a, #2d8a3e); color: white; padding: 14px 40px; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
+    .submit-btn:hover { opacity: 0.9; }
+
+    /* Info Boxes */
+    .info-box { border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+    .info-box h3 { font-size: 16px; margin-bottom: 12px; }
+    .info-box .line { font-size: 14px; line-height: 2.2; }
+    .box-green { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border: 1px solid #a5d6a7; color: #2e7d32; }
+    .box-green h3 { color: #1a5f2a; }
+    .box-orange { background: linear-gradient(135deg, #fff3e0, #ffe0b2); border: 1px solid #ffcc80; color: #bf360c; }
+    .box-orange h3 { color: #e65100; }
+    .box-blue { background: linear-gradient(135deg, #e3f2fd, #bbdefb); border: 1px solid #90caf9; color: #0d47a1; }
+    .box-blue h3 { color: #1565c0; }
+
+    /* Footer */
+    .footer { text-align: center; padding: 20px; color: #888; font-size: 13px; }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .header h1 { font-size: 22px; }
+      .result-card .value { font-size: 22px; }
+      .btn { padding: 12px 20px; font-size: 14px; }
+    }
+  </style>
+<base target="_blank">
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="icon">☀️</div>
+    <h1>सोलर सिस्टम कैलकुलेटर</h1>
+    <p>₹60,000/kW | ₹1,08,000 सरकारी सब्सिडी | 25 साल वारंटी | 80% बिजली बचत</p>
+  </div>
+
+  <div class="container">
+
+    <!-- System Selector -->
+    <div class="card">
+      <div class="card-title">⚡ अपना सिस्टम साइज़ चुनें</div>
+      <div class="btn-grid">
+        <button class="kw-btn" onclick="selectSystem(3)" id="btn3">3 kW</button>
+        <button class="kw-btn" onclick="selectSystem(4)" id="btn4">4 kW</button>
+        <button class="kw-btn" onclick="selectSystem(5)" id="btn5">5 kW</button>
+        <button class="kw-btn" onclick="selectSystem(6)" id="btn6">6 kW</button>
+        <button class="kw-btn" onclick="selectSystem(7)" id="btn7">7 kW</button>
+        <button class="kw-btn" onclick="selectSystem(8)" id="btn8">8 kW</button>
+        <button class="kw-btn" onclick="selectSystem(9)" id="btn9">9 kW</button>
+        <button class="kw-btn" onclick="selectSystem(10)" id="btn10">10 kW</button>
+      </div>
+
+      <div class="input-grid">
+        <div class="input-group">
+          <label>💰 बिजली दर (₹/यूनिट)</label>
+          <input type="number" id="elecRate" value="8" oninput="recalc()">
+        </div>
+        <div class="input-group">
+          <label>📉 बचत % (लक्ष्य)</label>
+          <input type="range" id="savingsPercent" min="50" max="95" value="80" oninput="document.getElementById('savingsVal').textContent=this.value+'%'; recalc()">
+          <div class="slider-val" id="savingsVal">80%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Results -->
+    <div class="result-grid">
+      <div class="result-card bg-green">
+        <div class="label">🔋 सिस्टम साइज़</div>
+        <div class="value" id="resSystemSize">--</div>
+        <div class="unit">kW</div>
+      </div>
+      <div class="result-card bg-orange">
+        <div class="label">📦 सोलर पैनल</div>
+        <div class="value" id="resPanelCount">--</div>
+        <div class="unit">पैनल (540W)</div>
+      </div>
+      <div class="result-card bg-red">
+        <div class="label">💵 कुल लागत</div>
+        <div class="value-sm" id="resGrossCost">--</div>
+        <div class="unit">बिना सब्सिडी</div>
+      </div>
+      <div class="result-card bg-purple">
+        <div class="label">🏛️ सरकारी सब्सिडी</div>
+        <div class="value-sm" id="resSubsidy">--</div>
+        <div class="unit">वापस</div>
+      </div>
+      <div class="result-card bg-teal">
+        <div class="label">✅ आपकी लागत</div>
+        <div class="value-sm" id="resNetCost">--</div>
+        <div class="unit">सब्सिडी के बाद</div>
+      </div>
+      <div class="result-card bg-blue">
+        <div class="label">⏱️ पे-बैक</div>
+        <div class="value" id="resPayback">--</div>
+        <div class="unit">वर्ष</div>
+      </div>
+    </div>
+
+    <!-- Info Results -->
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="icon">⚡</div>
+        <div class="label">दैनिक उत्पादन</div>
+        <div class="value" style="color:#1a5f2a" id="resDailyGen">--</div>
+        <div class="unit">यूनिट/दिन</div>
+      </div>
+      <div class="info-card">
+        <div class="icon">📊</div>
+        <div class="label">मासिक उत्पादन</div>
+        <div class="value" style="color:#1a5f2a" id="resMonthlyGen">--</div>
+        <div class="unit">यूनिट/महीना</div>
+      </div>
+      <div class="info-card">
+        <div class="icon">💰</div>
+        <div class="label">मासिक बचत</div>
+        <div class="value" style="color:#27ae60" id="resMonthlySave">--</div>
+        <div class="unit">₹/महीना</div>
+      </div>
+      <div class="info-card">
+        <div class="icon">📈</div>
+        <div class="label">सालाना बचत</div>
+        <div class="value" style="color:#27ae60" id="resYearlySave">--</div>
+        <div class="unit">₹/साल</div>
+      </div>
+      <div class="info-card">
+        <div class="icon">🎯</div>
+        <div class="label">25 साल कुल बचत</div>
+        <div class="value" style="color:#f5a623" id="resTotalSave">--</div>
+        <div class="unit">कुल</div>
+      </div>
+      <div class="info-card">
+        <div class="icon">🏠</div>
+        <div class="label">रूफटॉप ज़रूरत</div>
+        <div class="value" style="color:#3498db" id="resRoofArea">--</div>
+        <div class="unit">वर्ग फुट</div>
+      </div>
+    </div>
+
+    <!-- CTA Buttons -->
+    <div class="cta-section">
+      <h3>☀️ आज ही सोलर लगवाएँ!</h3>
+      <p>25 साल वारंटी + ₹1,08,000 सब्सिडी + 80% बिजली बचत</p>
+      <div class="btn-row">
+        <a href="https://wa.me/919999999999?text=नमस्ते!%20मुझे%20सोलर%20सिस्टम%20के%20बारे%20में%20जानकारी%20चाहिए।" class="btn btn-whatsapp" target="_blank">💬 WhatsApp करें</a>
+        <a href="tel:+919999999999" class="btn btn-call">📞 अभी कॉल करें</a>
+        <button class="btn btn-form" onclick="toggleForm()">📝 फ्री कोटेशन लें</button>
+      </div>
+    </div>
+
+    <!-- Lead Form -->
+    <div class="card lead-form" id="leadForm">
+      <div class="card-title">📝 फ्री कोटेशन के लिए भरें</div>
+      <form onsubmit="submitForm(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>👤 आपका नाम *</label>
+            <input type="text" id="leadName" placeholder="पूरा नाम" required>
+          </div>
+          <div class="form-group">
+            <label>📱 मोबाइल नंबर *</label>
+            <input type="tel" id="leadPhone" placeholder="10 अंकों का नंबर" pattern="[0-9]{10}" required>
+          </div>
+          <div class="form-group">
+            <label>📧 ईमेल (वैकल्पिक)</label>
+            <input type="email" id="leadEmail" placeholder="email@example.com">
+          </div>
+          <div class="form-group">
+            <label>🏙️ शहर *</label>
+            <input type="text" id="leadCity" placeholder="आपका शहर" required>
+          </div>
+          <div class="form-group">
+            <label>🏠 मासिक बिजली बिल (₹)</label>
+            <input type="number" id="leadBill" placeholder="जैसे: 5000">
+          </div>
+          <div class="form-group">
+            <label>📐 रूफटॉप एरिया (वर्ग फुट)</label>
+            <input type="number" id="leadArea" placeholder="जैसे: 500">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:14px">
+          <label>📝 संदेश (वैकल्पिक)</label>
+          <textarea id="leadMessage" rows="3" placeholder="कोई खास जानकारी..."></textarea>
+        </div>
+        <button type="submit" class="submit-btn">✅ फ्री कोटेशन भेजें</button>
+      </form>
+      <div id="formSuccess" style="display:none; text-align:center; padding:20px; color:#27ae60; font-weight:700; font-size:16px;">
+        ✅ धन्यवाद! हमारी टीम जल्द ही आपसे संपर्क करेगी।
+      </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="card">
+      <div class="card-title">📋 3 kW से 10 kW — पूरा तुलनात्मक विश्लेषण</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>सिस्टम</th>
+              <th>पैनल</th>
+              <th>कुल लागत</th>
+              <th>सब्सिडी</th>
+              <th>आपकी लागत</th>
+              <th>मासिक बचत</th>
+              <th>सालाना बचत</th>
+              <th>पे-बैक</th>
+              <th>25Y बचत</th>
+            </tr>
+          </thead>
+          <tbody id="compTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Year-wise ROI -->
+    <div class="card">
+      <div class="card-title">📊 <span id="roiTitle">--</span> kW — वर्ष-दर-वर्ष ROI</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr style="background:#2d8a3e">
+              <th>वर्ष</th>
+              <th>सालाना बचत</th>
+              <th>कुल बचत</th>
+              <th>बचा निवेश</th>
+              <th>ROI %</th>
+              <th>स्थिति</th>
+            </tr>
+          </thead>
+          <tbody id="yearlyTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Info Boxes -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-bottom:20px">
+      <div class="info-box box-green">
+        <h3>🛡️ वारंटी जानकारी</h3>
+        <div class="line">✅ <strong>सोलर पैनल:</strong> 25 साल परफॉरमेंस वारंटी</div>
+        <div class="line">✅ <strong>इन्वर्टर:</strong> 5-10 साल वारंटी</div>
+        <div class="line">✅ <strong>स्ट्रक्चर:</strong> 10 साल वारंटी</div>
+        <div class="line">✅ <strong>परफॉरमेंस:</strong> 80%+ 25वें साल तक</div>
+        <div class="line">✅ <strong>AMC:</strong> 5 साल फ्री मेंटेनेंस</div>
+      </div>
+      <div class="info-box box-orange">
+        <h3>🏛️ सब्सिडी स्कीम</h3>
+        <div class="line">💰 <strong>सब्सिडी राशि:</strong> ₹1,08,000 (फिक्स)</div>
+        <div class="line">📋 <strong>आवेदन:</strong> MNRE पोर्टल पर</div>
+        <div class="line">🏢 <strong>वेंडर:</strong> MNRE रजिस्टर्ड होना चाहिए</div>
+        <div class="line">⏳ <strong>समय:</strong> 60-90 दिन में वापसी</div>
+        <div class="line">📄 <strong>दस्तावेज़:</strong> बिजली बिल, पहचान पत्र</div>
+      </div>
+      <div class="info-box box-blue">
+        <h3>🌍 25 साल में पर्यावरण प्रभाव</h3>
+        <div class="line">🌳 <strong>पेड़ बराबर:</strong> <span id="envTrees">--</span> पेड़</div>
+        <div class="line">🏭 <strong>CO2 बचत:</strong> <span id="envCO2">--</span> टन</div>
+        <div class="line">⛽ <strong>कोयला बचत:</strong> <span id="envCoal">--</span> टन</div>
+        <div class="line">🚗 <strong>कार यात्रा:</strong> <span id="envCar">--</span> km</div>
+      </div>
+    </div>
+
+    <!-- Footer CTA -->
+    <div class="cta-section">
+      <h3>☀️ अभी शुरू करें!</h3>
+      <p>फ्री साइट विजिट + कोटेशन + सब्सिडी में मदद</p>
+      <div class="btn-row">
+        <a href="https://wa.me/919999999999?text=नमस्ते!%20मुझे%20सोलर%20सिस्टम%20लगवाना%20है।%20कृपया%20जानकारी%20दें।" class="btn btn-whatsapp" target="_blank">💬 WhatsApp</a>
+        <a href="tel:+919999999999" class="btn btn-call">📞 कॉल करें</a>
+      </div>
+    </div>
+
+    <div class="footer">
+      ⚡ सोलर एनर्जी — आज का निवेश, कल की बचत 🌞<br>
+      © 2026 Solar Solutions India. All Rights Reserved.
+    </div>
+
+  </div>
+
+<script>
+let currentKW = 5;
+const COST_PER_KW = 60000;
+const SUBSIDY_AMOUNT = 108000;
+const PANEL_WATT = 540;
+const PANEL_AREA = 22;
+const GEN_PER_KW = 4.5;
+const DEGRADATION = 0.005;
+
+function formatINR(num) {
+  if (num >= 10000000) return '₹' + (num/10000000).toFixed(2) + ' Cr';
+  if (num >= 100000) return '₹' + (num/100000).toFixed(2) + ' L';
+  if (num >= 1000) return '₹' + Math.round(num).toLocaleString('en-IN');
+  return '₹' + Math.round(num);
+}
+
+function selectSystem(kw) {
+  currentKW = kw;
+  for (let i = 3; i <= 10; i++) {
+    document.getElementById('btn' + i).classList.remove('active');
+  }
+  document.getElementById('btn' + kw).classList.add('active');
+  recalc();
+}
+
+function toggleForm() {
+  const form = document.getElementById('leadForm');
+  form.classList.toggle('active');
+  if (form.classList.contains('active')) {
+    form.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function submitForm(e) {
+  e.preventDefault();
+  const name = document.getElementById('leadName').value;
+  const phone = document.getElementById('leadPhone').value;
+  const city = document.getElementById('leadCity').value;
+  const bill = document.getElementById('leadBill').value;
+  const area = document.getElementById('leadArea').value;
+
+  // WhatsApp redirect with pre-filled message
+  const msg = `नमस्ते! मैं ${name} (${phone}) ${city} से हूँ। मुझे सोलर सिस्टम की जानकारी चाहिए। मेरा मासिक बिल ₹${bill || 'N/A'} है और रूफटॉप ${area || 'N/A'} sq ft है।`;
+  const waLink = 'https://wa.me/919999999999?text=' + encodeURIComponent(msg);
+  window.open(waLink, '_blank');
+
+  document.getElementById('formSuccess').style.display = 'block';
+  document.querySelector('#leadForm form').style.display = 'none';
+}
+
+function recalc() {
+  const kw = currentKW;
+  const rate = parseFloat(document.getElementById('elecRate').value) || 8;
+  const savingsPct = parseFloat(document.getElementById('savingsPercent').value) || 80;
+
+  const panelCount = Math.ceil((kw * 1000) / PANEL_WATT);
+  const grossCost = kw * COST_PER_KW;
+  const netCost = Math.max(0, grossCost - SUBSIDY_AMOUNT);
+  const dailyGen = kw * GEN_PER_KW;
+  const monthlyGen = dailyGen * 30;
+  const monthlySave = monthlyGen * rate * (savingsPct / 100);
+  const yearlySave = monthlySave * 12;
+  const roofArea = panelCount * PANEL_AREA;
+
+  let cumulative = 0;
+  let paybackYear = 0;
+  let total25Save = 0;
+  let yearRows = '';
+
+  for (let y = 1; y <= 25; y++) {
+    const deg = Math.pow(1 - DEGRADATION, y - 1);
+    const yearGen = dailyGen * 365 * deg;
+    const yearSave = yearGen * rate * (savingsPct / 100);
+    const maint = grossCost * 0.005;
+    const netSave = yearSave - maint;
+    cumulative += netSave;
+    total25Save += netSave;
+
+    if (paybackYear === 0 && cumulative >= netCost) paybackYear = y;
+
+    const remaining = Math.max(0, netCost - cumulative);
+    const roi = ((cumulative / netCost) * 100).toFixed(1);
+    const status = remaining <= 0 ? '✅ लाभ' : '⏳ वसूली';
+    const isPayback = y === paybackYear;
+    const rowClass = isPayback ? 'highlight' : (y % 2 === 0 ? '' : '');
+    const badge = isPayback ? ' 🎯' : '';
+
+    yearRows += `<tr class="${rowClass}">
+      <td>${y}${badge}</td>
+      <td>${formatINR(Math.round(netSave))}</td>
+      <td>${formatINR(Math.round(cumulative))}</td>
+      <td style="color:${remaining<=0?'#27ae60':'#e74c3c'}">${remaining<=0?'✅ पूरा':formatINR(Math.round(remaining))}</td>
+      <td>${roi}%</td>
+      <td>${status}</td>
+    </tr>`;
+  }
+
+  if (paybackYear === 0) paybackYear = '>25';
+
+  const totalGen25 = dailyGen * 365 * 25 * 0.88;
+  const co2 = (totalGen25 * 0.82 / 1000).toFixed(1);
+  const trees = Math.round(co2 * 45);
+  const coal = (totalGen25 * 0.35 / 1000).toFixed(1);
+  const carKm = Math.round(totalGen25 * 0.12);
+
+  document.getElementById('resSystemSize').textContent = kw;
+  document.getElementById('resPanelCount').textContent = panelCount;
+  document.getElementById('resGrossCost').textContent = formatINR(grossCost);
+  document.getElementById('resSubsidy').textContent = formatINR(SUBSIDY_AMOUNT);
+  document.getElementById('resNetCost').textContent = formatINR(netCost);
+  document.getElementById('resPayback').textContent = paybackYear;
+  document.getElementById('resDailyGen').textContent = dailyGen.toFixed(1);
+  document.getElementById('resMonthlyGen').textContent = Math.round(monthlyGen);
+  document.getElementById('resMonthlySave').textContent = formatINR(monthlySave);
+  document.getElementById('resYearlySave').textContent = formatINR(yearlySave);
+  document.getElementById('resTotalSave').textContent = formatINR(total25Save);
+  document.getElementById('resRoofArea').textContent = roofArea;
+
+  document.getElementById('roiTitle').textContent = kw;
+  document.getElementById('yearlyTable').innerHTML = yearRows;
+
+  document.getElementById('envTrees').textContent = trees.toLocaleString('en-IN');
+  document.getElementById('envCO2').textContent = co2;
+  document.getElementById('envCoal').textContent = coal;
+  document.getElementById('envCar').textContent = carKm.toLocaleString('en-IN');
+
+  let compHTML = '';
+  for (let k = 3; k <= 10; k++) {
+    const pc = Math.ceil((k * 1000) / PANEL_WATT);
+    const gc = k * COST_PER_KW;
+    const nc = Math.max(0, gc - SUBSIDY_AMOUNT);
+    const dg = k * GEN_PER_KW;
+    const mg = dg * 30;
+    const ms = mg * rate * (savingsPct / 100);
+    const ys = ms * 12;
+
+    let cum = 0, pb = 0, t25 = 0;
+    for (let y = 1; y <= 25; y++) {
+      const deg = Math.pow(1 - DEGRADATION, y - 1);
+      const yg = dg * 365 * deg;
+      const ysav = yg * rate * (savingsPct / 100);
+      const net = ysav - (gc * 0.005);
+      cum += net; t25 += net;
+      if (pb === 0 && cum >= nc) pb = y;
+    }
+    if (pb === 0) pb = '>25';
+
+    const isSel = k === kw;
+    const rowClass = isSel ? 'selected' : '';
+
+    compHTML += `<tr class="${rowClass}">
+      <td>${k} kW ${isSel?'✅':''}</td>
+      <td>${pc}</td>
+      <td>${formatINR(gc)}</td>
+      <td style="color:#e74c3c">${formatINR(SUBSIDY_AMOUNT)}</td>
+      <td style="color:#27ae60;font-weight:700">${formatINR(nc)}</td>
+      <td>${formatINR(Math.round(ms))}</td>
+      <td>${formatINR(Math.round(ys))}</td>
+      <td>${pb}</td>
+      <td style="color:#f5a623;font-weight:700">${formatINR(Math.round(t25))}</td>
+    </tr>`;
+  }
+  document.getElementById('compTableBody').innerHTML = compHTML;
+}
+
+selectSystem(5);
+</script>
+
+</body>
+</html>
